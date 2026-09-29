@@ -13,13 +13,19 @@ document.querySelector('#app').innerHTML = `
   </div>
 `;
 
-const { books, users } = data;
+const { books } = data;
+
+const USER_ID = 4;
+const MODULE_CODE = "5021";
+const STATUS_GOOD = "good";
+const INCREMENT = 0.10;
 
 console.log("=== PRUEBAS BATOIBOOKS ===");
-console.log("Libros del usuario 4:", functions.booksFromUser(books, 4));
 
-const librosModulo = functions.booksFromModule(books, "5021");
-console.log("Libros del módulo 5021 en estado 'good':", functions.booksWithStatus(librosModulo, "good"));
+console.log(`Libros del usuario ${USER_ID}:`, functions.booksFromUser(books, USER_ID));
 
-console.log("Precio medio de los libros:", functions.averagePriceOfBooks(books));
-console.log("Nuevos precios con un 10% de incremento:", functions.incrementPriceOfBooks(books, 0.10));
+const moduleBooks = functions.booksFromModule(books, MODULE_CODE);
+const goodModuleBooks = functions.booksWithStatus(moduleBooks, STATUS_GOOD);
+console.log(`Libros del módulo ${MODULE_CODE} en estado "${STATUS_GOOD}":`, goodModuleBooks);
+
+console.log("Nuevos precios con un 10% de incremento:", functions.incrementPriceOfBooks(books, INCREMENT));
