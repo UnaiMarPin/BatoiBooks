@@ -1,7 +1,9 @@
 import './style.css';
 import logoBatoi from './assets/logoBatoi.png';
-import * as functions from './functions.js';
 import data from './services/datos.js';
+import Books from './model/books.class';
+import Users from './model/users.class';
+import Modules from './model/modules.class';
 
 document.querySelector('#app').innerHTML = `
   <div>
@@ -9,23 +11,22 @@ document.querySelector('#app').innerHTML = `
       <img src="${logoBatoi}" class="logo" alt="Logo BatoiBooks" />
     </a>
     <h1>BatoiBooks</h1>
-    <p class="read-the-docs">Abre la consola para ver los resultados de los arrays</p>
+    <p class="read-the-docs">Abre la consola para ver los resultados</p>
   </div>
 `;
 
-const { books } = data;
+const books = new Books();
+const users = new Users();
+const modules = new Modules();
 
-const USER_ID = 4;
-const MODULE_CODE = "5021";
-const STATUS_GOOD = "good";
-const INCREMENT = 0.10;
+books.populate(data.books);
+users.populate(data.users);
+modules.populate(data.modules);
 
 console.log("=== PRUEBAS BATOIBOOKS ===");
 
-console.log(`Libros del usuario ${USER_ID}:`, functions.booksFromUser(books, USER_ID));
+console.log("Libros del módulo 5021:", books.booksFromModule("5021"));
 
-const moduleBooks = functions.booksFromModule(books, MODULE_CODE);
-const goodModuleBooks = functions.booksWithStatus(moduleBooks, STATUS_GOOD);
-console.log(`Libros del módulo ${MODULE_CODE} en estado "${STATUS_GOOD}":`, goodModuleBooks);
+console.log("Libros en estado 'new':", books.booksWithStatus("new"));
 
-console.log("Nuevos precios con un 10% de incremento:", functions.incrementPriceOfBooks(books, INCREMENT));
+console.log("Nuevos precios con un 10% de incremento:", books.incrementPriceOfBooks(0.1));
