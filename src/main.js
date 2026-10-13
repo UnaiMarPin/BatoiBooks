@@ -1,9 +1,6 @@
-import './style.css';
-import logoBatoi from './assets/logoBatoi.png';
-import data from './services/datos.js';
-import Books from './model/books.class';
-import Users from './model/users.class';
-import Modules from './model/modules.class';
+import './style.css'
+import logoBatoi from './assets/logoBatoi.png'
+import Books from './model/books.class'
 
 document.querySelector('#app').innerHTML = `
   <div>
@@ -13,20 +10,31 @@ document.querySelector('#app').innerHTML = `
     <h1>BatoiBooks</h1>
     <p class="read-the-docs">Abre la consola para ver los resultados</p>
   </div>
-`;
+`
 
-const books = new Books();
-const users = new Users();
-const modules = new Modules();
+const books = new Books()
 
-books.populate(data.books);
-users.populate(data.users);
-modules.populate(data.modules);
+async function main() {
+  console.log('=== PRUEBAS BATOIBOOKS (4-ajax) ===')
 
-console.log("=== PRUEBAS BATOIBOOKS ===");
+  await books.fetchAll()
+  console.log('Libros cargados del servidor:', books.data.length)
+  console.log('Libros del módulo 5021:', books.booksFromModule('5021'))
+  console.log("Libros en estado 'new':", books.booksWithStatus('new'))
 
-console.log("Libros del módulo 5021:", books.booksFromModule("5021"));
+  const nuevo = await books.addBook({
+    userId: 2,
+    moduleCode: '5025',
+    publisher: 'Apunts',
+    price: 10,
+    pages: 30,
+    status: 'new',
+    photo: '',
+    comments: '',
+    soldDate: ''
+  })
+  console.log('Libro añadido:', nuevo)
+  console.log('Total de libros ahora:', books.data.length)
+}
 
-console.log("Libros en estado 'new':", books.booksWithStatus("new"));
-
-console.log("Nuevos precios con un 10% de incremento:", books.incrementPriceOfBooks(0.1));
+main().catch((err) => console.error('Error:', err.message))

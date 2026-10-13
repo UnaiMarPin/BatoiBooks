@@ -1,19 +1,28 @@
 import Book from './book.class'
+import { fetchBooks, createBook } from '../services/api'
 
 export default class Books {
   constructor() {
     this.data = []
   }
 
-  populate(books) {
-    this.data = books.map((b) => new Book(b))
+  async fetchAll() {
+    try {
+      this.data = await fetchBooks()
+    } catch (error) {
+      throw new Error(`No se pudieron cargar los libros: ${error.message}`)
+    }
   }
 
-  addBook(bookData) {
-    const newId = this.data.length === 0 ? 1 : Math.max(...this.data.map((b) => b.id)) + 1
-    const newBook = new Book({ ...bookData, id: newId })
-    this.data.push(newBook)
-    return newBook
+  async addBook(bookData) {
+    try {
+      const created = await createBook(bookData)
+      const newBook = new Book(created)
+      this.data.push(newBook)
+      return newBook
+    } catch (error) {
+      throw new Error(`No se pudo añadir el libro: ${error.message}`)
+    }
   }
 
   removeBook(bookId) {
@@ -86,9 +95,5 @@ export default class Books {
 
   booksNotSold() {
     return this.data.filter((b) => !b.soldDate)
-  }
-
-  incrementPriceOfBooks(percentage) {
-    return this.data.map((b) => new Book({ ...b, price: Number((b.price * (1 + percentage)).toFixed(2)) }))
   }
 }
