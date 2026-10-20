@@ -107,3 +107,25 @@ changeBook(newData) {
 - **Comprueba que el libro existe** antes de sustituir; si no, lanza excepción.
 - **Envuelve `newData` en `new Book(...)`** para garantizar que el array siempre contiene instancias de `Book` y el `toString()` sigue disponible.
 - **Devuelve la instancia creada**, no el objeto plano original, para que quien llame trabaje con el tipo correcto.
+
+---
+
+## Práctica 4 — Persistencia (Auditoría Parte A)
+
+En esta práctica, la gran decisión de diseño es: **¿los métodos de consulta deben pedir datos frescos al servidor o trabajar sobre `this.data` en memoria?**
+
+### Mi decisión: trabajar sobre `this.data` en memoria.
+
+Al arrancar la aplicación (o la clase), se llama a `fetchAll()`. Este método hace una petición HTTP (GET) y guarda el array resultante en la propiedad `this.data`. A partir de ahí, los métodos de consulta (como `booksFromUser`, `booksWithStatus`, `getModuleByCode`) simplemente filtran o buscan dentro de `this.data`. No vuelven a llamar al servidor.
+
+**Ventajas:**
+1. **Rendimiento**: Evitamos hacer una petición HTTP cada vez que el usuario busca algo. Las consultas en memoria son instantáneas.
+2. **Simplicidad**: Al no requerir red, estos métodos no necesitan ser `async` ni usar `await`, lo que simplifica mucho el código de las clases y de la interfaz.
+3. **Menor carga en el servidor**: No saturamos el backend con peticiones constantes.
+
+**Inconvenientes:**
+1. **Datos desactualizados**: Si otro usuario modifica la base de datos en el servidor, nuestra aplicación no se enterará hasta que se vuelva a llamar a `fetchAll()`.
+2. **Consumo de memoria**: Si la base de datos fuera gigante (millones de libros), cargar todo en memoria al inicio podría ser inviable.
+
+**Conclusión:**
+Para una aplicación de este tamaño es la opción ideal. Si en el futuro los datos cambian muy rápido, se podría implementar un sistema de "refresco" (volver a hacer `fetchAll` cada X segundos).

@@ -18,17 +18,33 @@ describe('Users — persistencia', () => {
     const users = new Users()
     const nuevo = { nick: 'Test', email: 'test@test.com', password: '1234' }
     const response = await users.addUser(nuevo)
+    
     expect(response.id).toBeDefined()
+    expect(response).toEqual({ ...nuevo, id: response.id })
     expect(users.data).toHaveLength(1)
   })
 
-  it('removeUser falla y NO modifica this.data si el servidor da error 500', async () => {
+  it('removeUser ante un error 500 rechaza la promesa y no modifica this.data', async () => {
     const users = new Users()
     users.data = [{ id: 1, nick: 'Test', email: 'test@test.com' }]
     
     server.use(
       http.delete('http://localhost:3000/users/:id', () => {
         return new HttpResponse(null, { status: 500 })
+      })
+    )
+
+    await expect(users.removeUser(1)).rejects.toThrow()
+    expect(users.data).toHaveLength(1)
+  })
+
+  it('removeUser ante un error 404 rechaza la promesa y no modifica this.data', async () => {
+    const users = new Users()
+    users.data = [{ id: 1, nick: 'Test', email: 'test@test.com' }]
+    
+    server.use(
+      http.delete('http://localhost:3000/users/:id', () => {
+        return new HttpResponse(null, { status: 404 })
       })
     )
 

@@ -41,4 +41,18 @@ describe('Books — persistencia', () => {
     await expect(books.removeBook(1)).rejects.toThrow()
     expect(books.data).toHaveLength(1)
   })
+
+  it('removeBook ante un error 404 rechaza la promesa y no modifica this.data', async () => {
+    const books = new Books()
+    books.data = [{ id: 1, userId: 2, moduleCode: 'ABCD', publisher: 'Apunts', price: 12, pages: 40, status: 'good' }]
+    
+    server.use(
+      http.delete('http://localhost:3000/books/:id', () => {
+        return new HttpResponse(null, { status: 404 })
+      })
+    )
+
+    await expect(books.removeBook(1)).rejects.toThrow()
+    expect(books.data).toHaveLength(1)
+  })
 })
