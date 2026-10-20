@@ -15,17 +15,16 @@ const CONTRATO = {
   user: ['toString'],
   module: ['toString'],
   books: [
-    'populate', 'addBook', 'removeBook', 'changeBook', 'toString',
+    'fetchAll', 'addBook', 'removeBook', 'changeBook', 'toString',
     'getBookById', 'getBookIndexById', 'bookExists', 'booksFromUser',
     'booksFromModule', 'booksCheeperThan', 'booksWithStatus',
-    'averagePriceOfBooks', 'booksOfTypeNotes', 'booksNotSold',
-    'incrementPriceOfBooks'
+    'averagePriceOfBooks', 'booksOfTypeNotes', 'booksNotSold'
   ],
   users: [
-    'populate', 'addUser', 'removeUser', 'changeUser', 'toString',
+    'fetchAll', 'addUser', 'removeUser', 'changeUser', 'toString',
     'getUserById', 'getUserIndexById', 'getUserByNickName'
   ],
-  modules: ['populate', 'toString', 'getModuleByCode']
+  modules: ['fetchAll', 'toString', 'getModuleByCode']
 }
 
 describe('Contrato: ficheros y clases', () => {
@@ -57,7 +56,7 @@ describe('Contrato: limpieza de la práctica anterior', () => {
     expect(Object.keys(import.meta.glob('../src/functions.js'))).toHaveLength(0)
   })
 
-  it('test/functions.test.js y test/contrato.test.js ya no existen', () => {
+  it('test/functions.test.js y test/contrato.test.js de Arrays ya no existen', () => {
     const restos = Object.keys(import.meta.glob(['./functions.test.js', './contrato.test.js']))
     expect(restos).toHaveLength(0)
   })

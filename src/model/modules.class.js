@@ -1,12 +1,17 @@
 import Module from './module.class'
+import { fetchModules } from '../services/api'
 
 export default class Modules {
   constructor() {
     this.data = []
   }
 
-  populate(modules) {
-    this.data = modules.map((m) => new Module(m))
+  async fetchAll() {
+    try {
+      this.data = await fetchModules()
+    } catch (error) {
+      throw new Error(`No se pudieron cargar los módulos: ${error.message}`)
+    }
   }
 
   toString() {

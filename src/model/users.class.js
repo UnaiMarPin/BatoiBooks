@@ -1,37 +1,56 @@
 import User from './user.class'
+import { fetchUsers, createUser, deleteUser, updateUser } from '../services/api'
 
 export default class Users {
   constructor() {
     this.data = []
   }
 
-  populate(users) {
-    this.data = users.map((u) => new User(u))
-  }
-
-  addUser(userData) {
-    const newId = this.data.length === 0 ? 1 : Math.max(...this.data.map((u) => u.id)) + 1
-    const newUser = new User({ ...userData, id: newId })
-    this.data.push(newUser)
-    return newUser
-  }
-
-  removeUser(userId) {
-    const index = this.data.findIndex((u) => u.id === userId)
-    if (index === -1) {
-      throw new Error(`No existe un usuario con id ${userId}`)
+  async fetchAll() {
+    try {
+      this.data = await fetchUsers()
+    } catch (error) {
+      throw new Error(`No se pudieron cargar los usuarios: ${error.message}`)
     }
-    this.data.splice(index, 1)
   }
 
-  changeUser(newData) {
-    const index = this.data.findIndex((u) => u.id === newData.id)
-    if (index === -1) {
-      throw new Error(`No existe un usuario con id ${newData.id}`)
+  async addUser(userData) {
+    try {
+      const created = await createUser(userData)
+      const newUser = new User(created)
+      this.data.push(newUser)
+      return newUser
+    } catch (error) {
+      throw new Error(`No se pudo añadir el usuario: ${error.message}`)
     }
-    const updated = new User(newData)
-    this.data[index] = updated
-    return updated
+  }
+
+  async removeUser(userId) {
+    try {
+      const index = this.data.findIndex((u) => u.id === userId)
+      if (index === -1) {
+        throw new Error(`No existe un usuario con id ${userId}`)
+      }
+      await deleteUser(userId)
+      this.data.splice(index, 1)
+    } catch (error) {
+      throw new Error(`No se pudo eliminar el usuario: ${error.message}`)
+    }
+  }
+
+  async changeUser(newData) {
+    try {
+      const index = this.data.findIndex((u) => u.id === newData.id)
+      if (index === -1) {
+        throw new Error(`No existe un usuario con id ${newData.id}`)
+      }
+      const updated = await updateUser(newData.id, newData)
+      const updatedUser = new User(updated)
+      this.data[index] = updatedUser
+      return updatedUser
+    } catch (error) {
+      throw new Error(`No se pudo modificar el usuario: ${error.message}`)
+    }
   }
 
   toString() {

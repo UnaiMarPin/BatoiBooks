@@ -1,6 +1,8 @@
 import './style.css'
 import logoBatoi from './assets/logoBatoi.png'
 import Books from './model/books.class'
+import Users from './model/users.class'
+import Modules from './model/modules.class'
 
 document.querySelector('#app').innerHTML = `
   <div>
@@ -12,29 +14,23 @@ document.querySelector('#app').innerHTML = `
   </div>
 `
 
-const books = new Books()
-
 async function main() {
   console.log('=== PRUEBAS BATOIBOOKS (4-ajax) ===')
 
+  const books = new Books()
+  const users = new Users()
+  const modules = new Modules()
+
   await books.fetchAll()
-  console.log('Libros cargados del servidor:', books.data.length)
+  await users.fetchAll()
+  await modules.fetchAll()
+
+  console.log('Libros cargados:', books.data.length)
+  console.log('Usuarios cargados:', users.data.length)
+  console.log('Módulos cargados:', modules.data.length)
+
   console.log('Libros del módulo 5021:', books.booksFromModule('5021'))
   console.log("Libros en estado 'new':", books.booksWithStatus('new'))
-
-  const nuevo = await books.addBook({
-    userId: 2,
-    moduleCode: '5025',
-    publisher: 'Apunts',
-    price: 10,
-    pages: 30,
-    status: 'new',
-    photo: '',
-    comments: '',
-    soldDate: ''
-  })
-  console.log('Libro añadido:', nuevo)
-  console.log('Total de libros ahora:', books.data.length)
 }
 
 main().catch((err) => console.error('Error:', err.message))

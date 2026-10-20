@@ -6,19 +6,12 @@ Proyecto desarrollado para el módulo de **Desarrollo Web en Entorno Cliente (DW
 
 ## 📋 Descripción
 
-En esta práctica (`3-clases`) hemos migrado la lógica a un **modelo orientado a objetos** con seis clases:
-
-- **Individuales**: `Book`, `User`, `Module` — representan un elemento.
-- **Colección**: `Books`, `Users`, `Modules` — agrupan elementos y ofrecen métodos.
+En esta práctica (`4-ajax`) hemos conectado la aplicación a un servidor backend (json-server). Los datos ya no se guardan en un fichero local, sino que se solicitan mediante peticiones HTTP asíncronas (`fetch`).
 
 ## 🚀 Cómo arrancar
 
-### Requisitos
-
-- Node.js 20.19+ o 22.12+
-- npm
-
-### Instalación
-
+### 1. Arrancar el servidor simulado (json-server)
+Abre una terminal y ejecuta:
 ```bash
-npm install
+cd ~/Escritorio/2DAW/DWEC/batoibooks-server
+npx json-server --watch batoibooks.json --port 3000

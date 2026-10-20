@@ -1,5 +1,5 @@
 import Book from './book.class'
-import { fetchBooks, createBook } from '../services/api'
+import { fetchBooks, createBook, deleteBook, updateBook } from '../services/api'
 
 export default class Books {
   constructor() {
@@ -25,22 +25,32 @@ export default class Books {
     }
   }
 
-  removeBook(bookId) {
-    const index = this.data.findIndex((b) => b.id === bookId)
-    if (index === -1) {
-      throw new Error(`No existe un libro con id ${bookId}`)
+  async removeBook(bookId) {
+    try {
+      const index = this.data.findIndex((b) => b.id === bookId)
+      if (index === -1) {
+        throw new Error(`No existe un libro con id ${bookId}`)
+      }
+      await deleteBook(bookId)
+      this.data.splice(index, 1)
+    } catch (error) {
+      throw new Error(`No se pudo eliminar el libro: ${error.message}`)
     }
-    this.data.splice(index, 1)
   }
 
-  changeBook(newData) {
-    const index = this.data.findIndex((b) => b.id === newData.id)
-    if (index === -1) {
-      throw new Error(`No existe un libro con id ${newData.id}`)
+  async changeBook(newData) {
+    try {
+      const index = this.data.findIndex((b) => b.id === newData.id)
+      if (index === -1) {
+        throw new Error(`No existe un libro con id ${newData.id}`)
+      }
+      const updated = await updateBook(newData.id, newData)
+      const updatedBook = new Book(updated)
+      this.data[index] = updatedBook
+      return updatedBook
+    } catch (error) {
+      throw new Error(`No se pudo modificar el libro: ${error.message}`)
     }
-    const updated = new Book(newData)
-    this.data[index] = updated
-    return updated
   }
 
   toString() {
