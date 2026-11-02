@@ -17,6 +17,14 @@ export const fetchBooks = async () => {
   }
 }
 
+//export async function fetchBooks() {
+
+ //const res = fetch(`${API_URL}/books`)
+
+ //this.data = await res.json()
+
+//}
+
 export const createBook = async (bookData) => {
   try {
     const response = await fetch(`${BASE_URL}/books`, {
