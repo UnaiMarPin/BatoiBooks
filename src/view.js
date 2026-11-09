@@ -1,9 +1,11 @@
 import logoBatoi from './assets/logoBatoi.png'
 
+// Constante del usuario actual (como pide el enunciado)
+const CURRENT_USER_ID = 2
+
 export default class View {
-  constructor(onSubmit, onRemove) {
+  constructor(onSubmit) {
     this.onSubmit = onSubmit
-    this.onRemove = onRemove
     this.renderStructure()
     this.bindEvents()
   }
@@ -15,6 +17,10 @@ export default class View {
           <img src="${logoBatoi}" class="logo" alt="Logo BatoiBooks" />
         </a>
         <h1>BatoiBooks</h1>
+        <div class="cart-info">
+          <span class="material-icons">shopping_cart</span>
+          <span id="cart-count">0</span>
+        </div>
       </header>
 
       <nav>
@@ -29,12 +35,6 @@ export default class View {
 
       <main>
         <div id="list"></div>
-
-        <div id="remove">
-          <label for="id-remove">ID del libro a borrar:</label>
-          <input type="text" id="id-remove" name="id-remove" />
-          <button type="button" id="remove-btn">Borrar Libro</button>
-        </div>
 
         <div id="form">
           <h2>Añadir un Libro</h2>
@@ -80,7 +80,7 @@ export default class View {
 
         <div id="about">
           <h2>Acerca de...</h2>
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
         </div>
       </main>
 
@@ -92,18 +92,12 @@ export default class View {
 
   bindEvents() {
     const bookForm = document.querySelector('#bookForm')
-    const removeBtn = document.querySelector('#remove-btn')
 
     bookForm.addEventListener('submit', (e) => {
       e.preventDefault()
       const formData = new FormData(bookForm)
       const data = Object.fromEntries(formData.entries())
-      this.onSubmit(data) // Avisa al controlador
-    })
-
-    removeBtn.addEventListener('click', () => {
-      const id = document.querySelector('#id-remove').value.trim()
-      this.onRemove(id) // Avisa al controlador
+      this.onSubmit(data) 
     })
   }
 
@@ -154,8 +148,11 @@ export default class View {
     card.setAttribute('data-id', book.id)
 
     const img = document.createElement('img')
-    img.src = book.photo || 'https://via.placeholder.com/150'
-    img.alt = `Libro: ${book.id}`
+    if (book.photo) {
+      img.src = book.photo
+      img.alt = `Libro: ${book.id}`
+      card.appendChild(img)
+    }
 
     const infoDiv = document.createElement('div')
     
@@ -181,8 +178,38 @@ export default class View {
     h4Price.textContent = `${book.price} €`
 
     infoDiv.append(h3, h4Publisher, pPages, pStatus, pSold, pComments, h4Price)
-    card.append(img, infoDiv)
 
+    // --- NUEVO: BOTONES DE ACCIÓN ---
+    const actionsDiv = document.createElement('div')
+    actionsDiv.className = 'card-actions'
+
+    if (book.userId === CURRENT_USER_ID) {
+      // Mis libros: Editar y Borrar
+      const editBtn = document.createElement('button')
+      editBtn.type = 'button'
+      editBtn.setAttribute('aria-label', 'Editar')
+      editBtn.innerHTML = '<span class="material-icons">edit</span>'
+      editBtn.addEventListener('click', () => this.onEdit(book.id)) // Lo implementaremos luego
+
+      const deleteBtn = document.createElement('button')
+      deleteBtn.type = 'button'
+      deleteBtn.setAttribute('aria-label', 'Borrar')
+      deleteBtn.innerHTML = '<span class="material-icons">delete</span>'
+      deleteBtn.addEventListener('click', () => this.onDelete(book.id, moduleName)) // Lo implementaremos luego
+
+      actionsDiv.append(editBtn, deleteBtn)
+    } else {
+      // Libros de otros: Añadir al carrito
+      const cartBtn = document.createElement('button')
+      cartBtn.type = 'button'
+      cartBtn.setAttribute('aria-label', 'Añadir al carrito')
+      cartBtn.innerHTML = '<span class="material-icons">add_shopping_cart</span>'
+      cartBtn.addEventListener('click', () => this.onAddToCart(book.id)) // Lo implementaremos luego
+
+      actionsDiv.appendChild(cartBtn)
+    }
+
+    card.append(infoDiv, actionsDiv)
     listDiv.appendChild(card)
   }
 
@@ -193,6 +220,5 @@ export default class View {
 
   resetForm() {
     document.querySelector('#bookForm').reset()
-    document.querySelector('#id-remove').value = ''
   }
 }
