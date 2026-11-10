@@ -1,11 +1,8 @@
 import logoBatoi from './assets/logoBatoi.png'
 
-// Constante del usuario actual (como pide el enunciado)
-const CURRENT_USER_ID = 2
-
 export default class View {
-  constructor(onSubmit) {
-    this.onSubmit = onSubmit
+  constructor(handlers) {
+    this.handlers = handlers
     this.renderStructure()
     this.bindEvents()
   }
@@ -34,11 +31,15 @@ export default class View {
       <div id="messages"></div>
 
       <main>
-        <div id="list"></div>
+        <div id="list" class="page"></div>
 
-        <div id="form">
-          <h2>Añadir un Libro</h2>
+        <div id="form" class="page hidden">
+          <h2>Añadir libro</h2>
           <form id="bookForm">
+            <div id="id-container" class="hidden">
+              <label for="id">ID:</label>
+              <input type="text" id="id" name="id" readonly />
+            </div>
             <div>
               <label for="moduleCode">Módulo:</label>
               <select id="moduleCode" name="moduleCode" required>
@@ -78,9 +79,14 @@ export default class View {
           </form>
         </div>
 
-        <div id="about">
+        <div id="about" class="page hidden">
           <h2>Acerca de...</h2>
           <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+        </div>
+
+        <div id="not-found" class="page hidden">
+          <h2>Página no encontrada</h2>
+          <p>La página que buscas no existe. <a href="#list">Volver a la lista</a></p>
         </div>
       </main>
 
@@ -97,10 +103,62 @@ export default class View {
       e.preventDefault()
       const formData = new FormData(bookForm)
       const data = Object.fromEntries(formData.entries())
-      this.onSubmit(data) 
+      this.handlers.onSubmit(data) 
+    })
+
+    bookForm.addEventListener('reset', (e) => {
+      // El reset nativo limpia los campos, pero queremos que además cambie la ruta a #form
+      setTimeout(() => this.handlers.onReset(), 0)
+    })
+
+    // Enrutador: escuchamos el cambio de hash en la URL
+    window.addEventListener('hashchange', () => {
+      this.handlers.onHashChange(window.location.hash)
+    })
+
+    // Escuchamos el botón atrás/adelante del navegador
+    window.addEventListener('popstate', () => {
+      this.handlers.onHashChange(window.location.hash)
     })
   }
 
+  // --- ENRUTADOR VISUAL ---
+  showPage(pageId) {
+    document.querySelectorAll('main .page').forEach(page => {
+      page.classList.add('hidden')
+    })
+    const page = document.querySelector(`#${pageId}`)
+    if (page) page.classList.remove('hidden')
+  }
+
+  setFormModeAdd() {
+    document.querySelector('#form h2').textContent = 'Añadir libro'
+    document.querySelector('#id-container').classList.add('hidden')
+    document.querySelector('#bookForm').reset()
+  }
+
+  setFormModeEdit(book) {
+    document.querySelector('#form h2').textContent = 'Editar libro'
+    document.querySelector('#id-container').classList.remove('hidden')
+    
+    const form = document.querySelector('#bookForm')
+    form.elements['id'].value = book.id
+    form.elements['moduleCode'].value = book.moduleCode
+    form.elements['publisher'].value = book.publisher
+    form.elements['price'].value = book.price
+    form.elements['pages'].value = book.pages
+    form.elements['photo'].value = book.photo || ''
+    form.elements['comments'].value = book.comments || ''
+    
+    const radio = Array.from(form.querySelectorAll('input[name="status"]')).find(r => r.value === book.status)
+    if (radio) radio.checked = true
+  }
+
+  updateCartCount(count) {
+    document.querySelector('#cart-count').textContent = count
+  }
+
+  // --- MENSAJES ---
   showMessage(text, type = 'info') {
     const messagesDiv = document.querySelector('#messages')
     const alertDiv = document.createElement('div')
@@ -122,8 +180,10 @@ export default class View {
     }
   }
 
+  // --- RENDERIZADO DE LIBROS ---
   renderModules(modules) {
     const select = document.querySelector('#moduleCode')
+    select.innerHTML = '<option value="">Selecciona un módulo</option>' // Limpiamos antes de añadir
     modules.forEach(module => {
       const option = document.createElement('option')
       option.value = module.code
@@ -142,6 +202,7 @@ export default class View {
     const listDiv = document.querySelector('#list')
     const module = modules.find(m => m.code === book.moduleCode)
     const moduleName = module ? module.cliteral : book.moduleCode
+    const CURRENT_USER_ID = 2 // Definido aquí para simplificar
 
     const card = document.createElement('div')
     card.className = 'card'
@@ -179,32 +240,29 @@ export default class View {
 
     infoDiv.append(h3, h4Publisher, pPages, pStatus, pSold, pComments, h4Price)
 
-    // --- NUEVO: BOTONES DE ACCIÓN ---
     const actionsDiv = document.createElement('div')
     actionsDiv.className = 'card-actions'
 
     if (book.userId === CURRENT_USER_ID) {
-      // Mis libros: Editar y Borrar
       const editBtn = document.createElement('button')
       editBtn.type = 'button'
       editBtn.setAttribute('aria-label', 'Editar')
       editBtn.innerHTML = '<span class="material-icons">edit</span>'
-      editBtn.addEventListener('click', () => this.onEdit(book.id)) // Lo implementaremos luego
+      editBtn.addEventListener('click', () => this.handlers.onEditClick(book.id))
 
       const deleteBtn = document.createElement('button')
       deleteBtn.type = 'button'
       deleteBtn.setAttribute('aria-label', 'Borrar')
       deleteBtn.innerHTML = '<span class="material-icons">delete</span>'
-      deleteBtn.addEventListener('click', () => this.onDelete(book.id, moduleName)) // Lo implementaremos luego
+      deleteBtn.addEventListener('click', () => this.handlers.onDeleteClick(book.id, moduleName))
 
       actionsDiv.append(editBtn, deleteBtn)
     } else {
-      // Libros de otros: Añadir al carrito
       const cartBtn = document.createElement('button')
       cartBtn.type = 'button'
       cartBtn.setAttribute('aria-label', 'Añadir al carrito')
       cartBtn.innerHTML = '<span class="material-icons">add_shopping_cart</span>'
-      cartBtn.addEventListener('click', () => this.onAddToCart(book.id)) // Lo implementaremos luego
+      cartBtn.addEventListener('click', () => this.handlers.onAddToCartClick(book.id))
 
       actionsDiv.appendChild(cartBtn)
     }
@@ -213,12 +271,14 @@ export default class View {
     listDiv.appendChild(card)
   }
 
+  updateCard(book, modules) {
+    const oldCard = document.querySelector(`.card[data-id="${book.id}"]`)
+    if (oldCard) oldCard.remove()
+    this.renderBook(book, modules)
+  }
+
   removeBookFromDOM(bookId) {
     const card = document.querySelector(`.card[data-id="${bookId}"]`)
     if (card) card.remove()
-  }
-
-  resetForm() {
-    document.querySelector('#bookForm').reset()
   }
 }

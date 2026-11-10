@@ -1,40 +1,226 @@
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
-  font-weight: 400;
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color-scheme: dark;
+  color: #e2e8f0;
+  background-color: #0f172a;
 }
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
   min-height: 100vh;
-  justify-content: center;
 }
 
 #app {
-  max-width: 1280px;
+  max-width: 1200px;
   margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Header */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 0;
+  border-bottom: 1px solid #334155;
+}
+
+header img.logo { height: 3em; }
+
+header h1 {
+  font-size: 2rem;
+  margin: 0;
+  background: linear-gradient(to right, #60a5fa, #c084fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.cart-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.5rem;
+  background: #1e293b;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+}
+
+/* Menú */
+nav ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+nav a {
+  color: #94a3b8;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+nav a:hover {
+  background: #1e293b;
+  color: #f8fafc;
+}
+
+/* Ocultar páginas */
+.hidden { display: none !important; }
+
+/* Lista de Libros (Grid) */
+#list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.card {
+  background: #1e293b;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+.card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  background: #0f172a;
+}
+
+.card > div {
+  padding: 1rem;
+  flex-grow: 1;
+}
+
+.card h3 { margin: 0 0 0.5rem 0; font-size: 1.1rem; color: #f8fafc; }
+.card h4 { margin: 0.5rem 0; color: #cbd5e1; }
+.card p { margin: 0.25rem 0; font-size: 0.9rem; color: #94a3b8; }
+
+/* Botones de las Cards */
+.card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: #0f172a;
+}
+
+.card-actions button {
+  background: #334155;
+  border: none;
+  color: #f1f5f9;
+  padding: 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.card-actions button:hover { background: #475569; }
+
+/* Formulario */
+#form {
+  max-width: 600px;
+  margin: 0 auto;
+  background: #1e293b;
   padding: 2rem;
+  border-radius: 12px;
+}
+
+#form h2 { margin-top: 0; color: #f8fafc; }
+
+#form div {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+#form div.hidden { display: none; }
+
+#form label { margin-bottom: 0.25rem; color: #cbd5e1; font-weight: 500;}
+
+#form input, #form select, #form textarea {
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: #f8fafc;
+  font-family: inherit;
+}
+
+#form input:focus, #form select:focus, #form textarea:focus {
+  outline: none;
+  border-color: #60a5fa;
+}
+
+#form button {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+#form button[type="submit"] { background: #3b82f6; color: white; }
+#form button[type="submit"]:hover { background: #2563eb; }
+#form button[type="reset"] { background: #475569; color: white; margin-left: 1rem; }
+
+/* Mensajes */
+#messages {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.alert {
+  padding: 1rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 250px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+.alert-info { background: #1e3a8a; color: #bfdbfe; border: 1px solid #3b82f6; }
+.alert-danger { background: #7f1d1d; color: #fecaca; border: 1px solid #ef4444; }
+
+.btn-close {
+  background: none;
+  border: none;
+  color: inherit;
+  font-weight: bold;
+  cursor: pointer;
+  margin-left: 1rem;
+}
+
+/* Footer */
+footer {
   text-align: center;
-}
-
-img.logo, img {
-  height: 8em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-p.read-the-docs {
-  color: #888;
+  padding: 2rem 0;
+  color: #64748b;
+  border-top: 1px solid #334155;
+  margin-top: 2rem;
 }
