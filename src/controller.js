@@ -11,7 +11,7 @@ export default class Controller {
     this.modules = new Modules()
     this.cart = new Cart()
     
-    this.editingId = null // Estado: null si añadimos, ID si editamos
+    this.editingId = null 
   }
 
   async init() {
@@ -22,8 +22,8 @@ export default class Controller {
       await this.books.fetchAll()
       this.view.renderAllBooks(this.books.data, this.modules.data)
       
-      // Arrancamos el enrutador
-      this.handleRoute(window.location.hash || '#list')
+      const initialHash = window.location.hash || '#list'
+      this.handleRoute(initialHash)
     } catch (error) {
       this.view.showMessage(`Error al cargar los datos: ${error.message}`, 'danger')
     }
@@ -43,11 +43,12 @@ export default class Controller {
     } 
     else if (hash.startsWith('#edit/')) {
       const id = hash.split('/')[1]
-      const book = this.books.data.find(b => b.id === id)
+      // Comparamos forzando String para no fallar entre número/string
+      const book = this.books.data.find(b => String(b.id) === String(id))
       
       if (!book) {
         this.view.showPage('not-found')
-      } else if (book.userId !== USER_ID) {
+      } else if (String(book.userId) !== String(USER_ID)) {
         this.view.showMessage('No puedes editar un libro que no es tuyo', 'danger')
         window.location.hash = '#list'
       } else {
@@ -73,26 +74,31 @@ export default class Controller {
     }
 
     try {
+      // Si editingId no es null, estamos editando
       if (this.editingId) {
-        // --- MODO EDICIÓN ---
-        const original = this.books.getBookById(this.editingId)
+        const original = this.books.data.find(b => String(b.id) === String(this.editingId))
+        
+        // Creamos el objeto final para el servidor asegurando que todos los campos estén bien
         const updatedData = {
-          ...original, // Mantiene userId, soldDate, etc.
+          ...original, 
           moduleCode: data.moduleCode,
           publisher: data.publisher,
           price: parseFloat(data.price),
           pages: parseInt(data.pages, 10),
           status: data.status,
-          photo: data.photo,
-          comments: data.comments
+          photo: data.photo || '',
+          comments: data.comments || ''
         }
         
+        // El método changeBook hace el PUT al servidor
         const updatedBook = await this.books.changeBook(updatedData)
+        
+        // Actualizamos la tarjeta visualmente
         this.view.updateCard(updatedBook, this.modules.data)
         this.view.showMessage('Libro editado correctamente.', 'info')
         window.location.hash = '#list'
       } else {
-        // --- MODO AÑADIR ---
+        // MODO AÑADIR
         const newBook = {
           userId: USER_ID,
           moduleCode: data.moduleCode,
@@ -100,8 +106,8 @@ export default class Controller {
           price: parseFloat(data.price),
           pages: parseInt(data.pages, 10),
           status: data.status,
-          photo: data.photo,
-          comments: data.comments
+          photo: data.photo || '',
+          comments: data.comments || ''
         }
         const createdBook = await this.books.addBook(newBook)
         this.view.renderBook(createdBook, this.modules.data)
@@ -136,7 +142,7 @@ export default class Controller {
       this.cart.add(book)
       this.view.updateCartCount(this.cart.getCount())
       this.view.showMessage('Libro añadido al carrito.', 'info')
-      console.log('Carrito:', this.cart.items) // El profe lo pide para comprobar
+      console.log('Carrito:', this.cart.items)
     } catch (error) {
       this.view.showMessage(error.message, 'danger')
     }

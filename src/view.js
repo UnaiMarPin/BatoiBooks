@@ -103,6 +103,11 @@ export default class View {
       e.preventDefault()
       const formData = new FormData(bookForm)
       const data = Object.fromEntries(formData.entries())
+      
+      // Forzamos a leer la ID directamente del input, aunque esté oculto
+      // Esto soluciona el fallo de que FormData ignore los inputs con la clase "hidden"
+      data.id = bookForm.elements['id'].value
+      
       this.handlers.onSubmit(data) 
     })
 
@@ -243,7 +248,7 @@ export default class View {
     const actionsDiv = document.createElement('div')
     actionsDiv.className = 'card-actions'
 
-    if (book.userId === CURRENT_USER_ID) {
+    if (String(book.userId) === String(CURRENT_USER_ID)) {
       const editBtn = document.createElement('button')
       editBtn.type = 'button'
       editBtn.setAttribute('aria-label', 'Editar')

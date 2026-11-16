@@ -39,9 +39,9 @@ export default class Books {
     }
   }
 
-  async changeBook(newData) {
+    async changeBook(newData) {
     try {
-      const index = this.data.findIndex((b) => b.id === newData.id)
+      const index = this.data.findIndex((b) => String(b.id) === String(newData.id))
       if (index === -1) {
         throw new Error(`No existe un libro con id ${newData.id}`)
       }
