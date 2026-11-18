@@ -224,3 +224,15 @@ footer {
   border-top: 1px solid #334155;
   margin-top: 2rem;
 }
+.error-msg {
+  color: #ef4444;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  display: block;
+  min-height: 1.2rem;
+}
+
+input.invalid, select.invalid {
+  border-color: #ef4444;
+  outline-color: #ef4444;
+}

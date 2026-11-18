@@ -89,3 +89,8 @@ export const fetchModules = async () => {
     return await checkResponse(response)
 
 }
+// ============ COMPROBACIONES ============
+export const checkBookExists = async (userId, moduleCode) => {
+  const response = await fetch(`${BASE_URL}/books?userId=${userId}&moduleCode=${moduleCode}`)
+  return await checkResponse(response)
+}

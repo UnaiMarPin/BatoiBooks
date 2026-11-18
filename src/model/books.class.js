@@ -1,5 +1,5 @@
 import Book from './book.class'
-import { fetchBooks, createBook, deleteBook, updateBook } from '../services/api'
+import { fetchBooks, createBook, deleteBook, updateBook, checkBookExists } from '../services/api'
 
 export default class Books {
   constructor() {
@@ -7,51 +7,39 @@ export default class Books {
   }
 
   async fetchAll() {
-    try {
-      this.data = await fetchBooks()
-    } catch (error) {
-      throw new Error(`No se pudieron cargar los libros: ${error.message}`)
-    }
+    this.data = await fetchBooks()
   }
-  
 
   async addBook(bookData) {
-    try {
-      const created = await createBook(bookData)
-      const newBook = new Book(created)
-      this.data.push(newBook)
-      return newBook
-    } catch (error) {
-      throw new Error(`No se pudo añadir el libro: ${error.message}`)
-    }
+    const created = await createBook(bookData)
+    const newBook = new Book(created)
+    this.data.push(newBook)
+    return newBook
   }
 
   async removeBook(bookId) {
-    try {
-      const index = this.data.findIndex((b) => b.id === bookId)
-      if (index === -1) {
-        throw new Error(`No existe un libro con id ${bookId}`)
-      }
-      await deleteBook(bookId)
-      this.data.splice(index, 1)
-    } catch (error) {
-      throw new Error(`No se pudo eliminar el libro: ${error.message}`)
+    const index = this.data.findIndex((b) => String(b.id) === String(bookId))
+    if (index === -1) {
+      throw new Error(`No existe un libro con id ${bookId}`)
     }
+    await deleteBook(bookId)
+    this.data.splice(index, 1)
   }
 
-    async changeBook(newData) {
-    try {
-      const index = this.data.findIndex((b) => String(b.id) === String(newData.id))
-      if (index === -1) {
-        throw new Error(`No existe un libro con id ${newData.id}`)
-      }
-      const updated = await updateBook(newData.id, newData)
-      const updatedBook = new Book(updated)
-      this.data[index] = updatedBook
-      return updatedBook
-    } catch (error) {
-      throw new Error(`No se pudo modificar el libro: ${error.message}`)
+  async changeBook(newData) {
+    const index = this.data.findIndex((b) => String(b.id) === String(newData.id))
+    if (index === -1) {
+      throw new Error(`No existe un libro con id ${newData.id}`)
     }
+    const updated = await updateBook(newData.id, newData)
+    const updatedBook = new Book(updated)
+    this.data[index] = updatedBook
+    return updatedBook
+  }
+
+  async bookExists(userId, moduleCode) {
+    const books = await checkBookExists(userId, moduleCode)
+    return books.length > 0
   }
 
   toString() {
@@ -59,7 +47,7 @@ export default class Books {
   }
 
   getBookById(bookId) {
-    const book = this.data.find((b) => b.id === bookId)
+    const book = this.data.find((b) => String(b.id) === String(bookId))
     if (!book) {
       throw new Error(`No existe un libro con id ${bookId}`)
     }
@@ -67,15 +55,11 @@ export default class Books {
   }
 
   getBookIndexById(bookId) {
-    const index = this.data.findIndex((b) => b.id === bookId)
+    const index = this.data.findIndex((b) => String(b.id) === String(bookId))
     if (index === -1) {
       throw new Error(`No existe un libro con id ${bookId}`)
     }
     return index
-  }
-
-  bookExists(userId, moduleCode) {
-    return this.data.some((b) => b.userId === userId && b.moduleCode === moduleCode)
   }
 
   booksFromUser(userId) {

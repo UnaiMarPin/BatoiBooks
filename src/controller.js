@@ -43,7 +43,6 @@ export default class Controller {
     } 
     else if (hash.startsWith('#edit/')) {
       const id = hash.split('/')[1]
-      // Comparamos forzando String para no fallar entre número/string
       const book = this.books.data.find(b => String(b.id) === String(id))
       
       if (!book) {
@@ -67,18 +66,13 @@ export default class Controller {
     }
   }
 
+  // AQUÍ YA NO VALIDAMOS A MANO, LA VISTA SE ENCARGA DE QUE LLEGUEN DATOS CORRECTOS
   async handleSubmit(data) {
-    if (!data.moduleCode || !data.publisher || !data.price || !data.pages || !data.status) {
-      this.view.showMessage('Por favor, rellena todos los campos.', 'danger')
-      return
-    }
-
     try {
-      // Si editingId no es null, estamos editando
       if (this.editingId) {
+        // MODO EDICIÓN
         const original = this.books.data.find(b => String(b.id) === String(this.editingId))
         
-        // Creamos el objeto final para el servidor asegurando que todos los campos estén bien
         const updatedData = {
           ...original, 
           moduleCode: data.moduleCode,
@@ -90,10 +84,7 @@ export default class Controller {
           comments: data.comments || ''
         }
         
-        // El método changeBook hace el PUT al servidor
         const updatedBook = await this.books.changeBook(updatedData)
-        
-        // Actualizamos la tarjeta visualmente
         this.view.updateCard(updatedBook, this.modules.data)
         this.view.showMessage('Libro editado correctamente.', 'info')
         window.location.hash = '#list'
@@ -150,5 +141,39 @@ export default class Controller {
 
   handleReset() {
     window.location.hash = '#form'
+  }
+
+   async handleModuleChange(moduleCode) {
+    // 1. Si no hay módulo seleccionado, limpiamos el error y salimos
+    if (!moduleCode) {
+      this.view.clearCustomModuleError()
+      return
+    }
+
+    // 2. Si estamos editando, el módulo actual no cuenta como duplicado
+    if (this.editingId) {
+      const original = this.books.data.find(b => String(b.id) === String(this.editingId))
+      if (original && original.moduleCode === moduleCode) {
+        this.view.clearCustomModuleError()
+        return
+      }
+    }
+
+    try {
+      // 3. Preguntamos al modelo
+      const exists = await this.books.bookExists(USER_ID, moduleCode)
+      
+      // 4. Si existe, le decimos a la vista que marque el error
+      if (exists) {
+        this.view.setCustomModuleError('Ya tienes un libro a la venta de este módulo.')
+      } else {
+        this.view.clearCustomModuleError()
+      }
+    } catch (error) {
+      // 5. Si el servidor falla, mostramos el mensaje de error global (alert danger)
+      // Y NOS ASEGURAMOS de que el módulo NO se marca como repetido
+      this.view.showMessage(`Error al comprobar: ${error.message}`, 'danger')
+      this.view.clearCustomModuleError()
+    }
   }
 }
